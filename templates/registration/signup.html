@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - RadioLive</title>
+    <link rel="stylesheet" href="{% static 'radio/app.css' %}">
+</head>
+<body>
+<header class="header">
+    <h1>Create Account</h1>
+    <p>Your favorites will be saved permanently.</p>
+</header>
+
+<main class="container">
+    <section class="auth-card">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Create account</button>
+        </form>
+        <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+        <p><a href="{% url 'home' %}">Back to home</a></p>
+    </section>
+</main>
+</body>
+</html>

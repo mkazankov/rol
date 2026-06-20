@@ -1,0 +1,279 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+.header {
+    text-align: center;
+    padding: 24px;
+    background: #1e293b;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.top-nav {
+    margin-top: 12px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.top-nav a,
+.top-nav button {
+    color: #e2e8f0;
+    background: #334155;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 6px 10px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.top-nav .welcome {
+    color: #cbd5e1;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px;
+    padding-bottom: 120px;
+}
+
+.messages {
+    margin-bottom: 12px;
+}
+
+.message {
+    background: #14532d;
+    border: 1px solid #22c55e;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 0;
+}
+
+.refresh-form {
+    margin-bottom: 12px;
+}
+
+.refresh-form button {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #0ea5e9;
+    color: #f8fafc;
+    cursor: pointer;
+}
+
+.filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.filters input,
+.filters select,
+.filters button,
+.filters .reset {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.auth-card {
+    max-width: 460px;
+    margin: 0 auto;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.auth-card input {
+    width: 100%;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.auth-card button {
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    background: #2563eb;
+    color: #f8fafc;
+}
+
+.filters input {
+    background: #1e293b;
+    color: #e2e8f0;
+    min-width: 220px;
+}
+
+.filters select {
+    background: #1e293b;
+    color: #e2e8f0;
+    min-width: 220px;
+}
+
+.filters button,
+.filters .reset {
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.stations {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+}
+
+.station-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.station-card.favorite {
+    border-color: #f59e0b;
+}
+
+.station-head {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #334155;
+}
+
+.logo.fallback {
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+}
+
+.station-head h2 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.station-head p {
+    margin: 4px 0 0;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.quality-badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.quality-low {
+    background: #7f1d1d;
+    color: #fecaca;
+}
+
+.quality-medium {
+    background: #78350f;
+    color: #fde68a;
+}
+
+.quality-high {
+    background: #14532d;
+    color: #bbf7d0;
+}
+
+.quality-ultra {
+    background: #312e81;
+    color: #c7d2fe;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.play-btn,
+.fav-btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    color: #f8fafc;
+}
+
+.play-btn {
+    background: #16a34a;
+}
+
+.fav-btn {
+    background: #334155;
+}
+
+.meta {
+    margin: 10px 0 0;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.empty {
+    color: #fca5a5;
+}
+
+.player-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #020617;
+    border-top: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+    padding: 10px 16px;
+}
+
+.player-bar audio {
+    width: min(600px, 100%);
+}
+
+.track-line {
+    margin: 4px 0 0;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}

@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorites - RadioLive</title>
+    <link rel="stylesheet" href="{% static 'radio/app.css' %}">
+</head>
+<body>
+<header class="header">
+    <h1>My Favorite Stations</h1>
+    <p>Saved to your account when logged in.</p>
+    <nav class="top-nav">
+        <a href="{% url 'home' %}">Home</a>
+        {% if user.is_authenticated %}
+            <span class="welcome">Hi, {{ user.username }}</span>
+            <form method="post" action="{% url 'logout' %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'signup' %}">Sign up</a>
+        {% endif %}
+    </nav>
+</header>
+
+<main class="container">
+    {% if stations %}
+        <section class="stations">
+            {% for station in stations %}
+                <article class="station-card favorite">
+                    <div class="station-head">
+                        {% if station.favicon %}
+                            <img src="{{ station.favicon }}" alt="{{ station.name }}" class="logo">
+                        {% else %}
+                            <div class="logo fallback">FM</div>
+                        {% endif %}
+                        <div>
+                            <h2>{{ station.name }}</h2>
+                            <p>{{ station.country }} | {{ station.genre|default:"No genre" }} | {{ station.bitrate }} kbps</p>
+                            <span class="quality-badge quality-{{ station.quality_level }}">{{ station.quality_label }}</span>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button
+                            type="button"
+                            class="play-btn"
+                            data-url="{{ station.stream_url }}"
+                            data-name="{{ station.name|escape }}"
+                            data-station-id="{{ station.station_uuid }}"
+                        >
+                            Play
+                        </button>
+                        <form method="post" action="{% url 'toggle_favorite' station.station_uuid %}">
+                            {% csrf_token %}
+                            <button type="submit" class="fav-btn">Remove</button>
+                        </form>
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+    {% else %}
+        <p class="empty">No favorites yet. Save stations from the home page.</p>
+    {% endif %}
+</main>
+
+<footer class="player-bar">
+    <div>
+        <strong id="now-playing">Nothing playing</strong>
+        <p id="now-track" class="track-line">Track: -</p>
+    </div>
+    <audio id="player" controls preload="none"></audio>
+</footer>
+
+<script src="{% static 'radio/app.js' %}"></script>
+</body>
+</html>
