@@ -1,3 +1,6 @@
+from unittest.mock import patch
+
+from django.core.management import call_command
 from django.test import TestCase
 
 from radio.models import Station, StationTrack, Track
@@ -41,7 +44,6 @@ class ReclassifyGenresCommandTests(TestCase):
             tags="edm, news",
             genre="Wrong",
         )
-        from django.core.management import call_command
 
         call_command("reclassify_genres", batch_size=10)
         station = Station.objects.get(station_uuid="test-uuid-1")
@@ -112,3 +114,80 @@ class RecordCurrentTrackTests(TestCase):
         record_current_track(station, "Artist - Song One")
 
         self.assertEqual(StationTrack.objects.filter(station=station).count(), 3)
+
+
+@patch("radio.management.commands.capture_playlist.fetch_current_track")
+class CapturePlaylistCommandTests(TestCase):
+    def test_records_current_track_for_active_stations(self, mock_fetch):
+        station = _make_station()
+        mock_fetch.return_value = "Nirvana - Smells Like Teen Spirit"
+
+        call_command("capture_playlist")
+
+        self.assertEqual(mock_fetch.call_count, 1)
+        entries = StationTrack.objects.filter(station=station)
+        self.assertEqual(entries.count(), 1)
+        self.assertEqual(entries[0].track.full_name, "Nirvana - Smells Like Teen Spirit")
+
+    def test_skips_consecutive_repeat(self, mock_fetch):
+        station = _make_station()
+        mock_fetch.return_value = "Artist - Same Song"
+
+        call_command("capture_playlist")
+        call_command("capture_playlist")
+
+        self.assertEqual(mock_fetch.call_count, 2)
+        self.assertEqual(StationTrack.objects.filter(station=station).count(), 1)
+
+    def test_no_metadata_ignored(self, mock_fetch):
+        station = _make_station()
+        mock_fetch.return_value = None
+
+        call_command("capture_playlist")
+
+        self.assertEqual(StationTrack.objects.filter(station=station).count(), 0)
+
+    def test_only_active_stations_processed(self, mock_fetch):
+        active = _make_station("active")
+        inactive = Station.objects.create(
+            station_uuid="playlist-test-uuid-inactive",
+            name="Inactive",
+            stream_url="https://example.com/inactive",
+            is_active=False,
+        )
+        mock_fetch.return_value = "Artist - Song"
+
+        call_command("capture_playlist")
+
+        self.assertEqual(mock_fetch.call_count, 1)
+        self.assertEqual(StationTrack.objects.filter(station=active).count(), 1)
+        self.assertEqual(StationTrack.objects.filter(station=inactive).count(), 0)
+
+    def test_limit_caps_stations_processed(self, mock_fetch):
+        _make_station("1")
+        _make_station("2")
+        mock_fetch.return_value = "Artist - Song"
+
+        call_command("capture_playlist", limit=1)
+
+        self.assertEqual(mock_fetch.call_count, 1)
+
+    def test_station_filter_targets_single_station(self, mock_fetch):
+        station = _make_station("target")
+        _make_station("other")
+        mock_fetch.return_value = "Artist - Song"
+
+        call_command("capture_playlist", station="playlist-test-uuid-target")
+
+        self.assertEqual(mock_fetch.call_count, 1)
+        self.assertEqual(StationTrack.objects.filter(station=station).count(), 1)
+
+    def test_stream_error_does_not_abort_run(self, mock_fetch):
+        _make_station("1")
+        _make_station("2")
+        mock_fetch.side_effect = OSError("stream unavailable")
+
+        call_command("capture_playlist")
+
+        self.assertEqual(mock_fetch.call_count, 2)
+        self.assertEqual(StationTrack.objects.count(), 0)

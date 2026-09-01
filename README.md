@@ -36,10 +36,6 @@ A simple Django website to listen to online radio stations.
 5. Open:
    - `http://127.0.0.1:8000/`
 
-## Deploy to server
-
-Развертывание на Ubuntu 24.04 + nginx (`r.mkazankov.ru`): [DEPLOY.md](DEPLOY.md)
-
 ## Refresh stations DB
 
 - From command line:
@@ -47,6 +43,19 @@ A simple Django website to listen to online radio stations.
   - `python manage.py refresh_stations --max-records 5000` (optional cap)
 - From UI:
   - Use `Refresh stations DB` button on the home page (no limit)
+
+## Capture station playlists
+
+For every active station, reads the ICY metadata from the live stream to find
+the currently playing track and appends it to that station's playlist.
+Consecutive repeats of the same track are skipped automatically.
+
+- `python manage.py capture_playlist` (all active stations)
+- `python manage.py capture_playlist --limit 50` (cap the number of stations)
+- `python manage.py capture_playlist --station <station-uuid>` (single station)
+
+Tip: schedule this command on a timer (e.g. every minute via cron / Task
+Scheduler) to keep a continuous history of played tracks.
 
 ## Notes
 
