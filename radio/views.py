@@ -9,7 +9,7 @@ from django.views import View
 from django.views.generic.edit import FormView
 
 from .models import Favorite, Station
-from .services import fetch_current_track, refresh_station_db
+from .services import fetch_current_track, record_current_track, refresh_station_db
 
 
 QUALITY_CHOICES = [
@@ -206,4 +206,8 @@ def refresh_stations(request: HttpRequest) -> HttpResponse:
 def current_track(request: HttpRequest, station_id: str) -> JsonResponse:
     station = get_object_or_404(Station, station_uuid=station_id)
     track = fetch_current_track(station.stream_url)
+    if track:
+        # Persist the currently playing track (and its station) to build
+        # the station playlist. Consecutive repeats are skipped.
+        record_current_track(station, track)
     return JsonResponse({"track": track})

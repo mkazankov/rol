@@ -40,3 +40,54 @@ class Favorite(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user} -> {self.station.name}"
+
+
+class Track(models.Model):
+    """
+    Global catalog of tracks shared across all stations.
+
+    Uniqueness is enforced on `full_name`, which is the composed
+    `artist - title` string (title-only when no artist is known).
+    """
+    artist = models.CharField(max_length=255, blank=True)
+    title = models.CharField(max_length=255)
+    full_name = models.CharField(max_length=512, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["full_name"]
+
+    def _compose_full_name(self) -> str:
+        if self.artist:
+            return f"{self.artist} - {self.title}"
+        return self.title
+
+    def save(self, *args: object, **kwargs: object) -> None:
+        self.full_name = self._compose_full_name()
+        super().save(*args, **kwargs)
+
+    def clean(self) -> None:
+        self.full_name = self._compose_full_name()
+
+    def __str__(self) -> str:
+        return self.full_name
+
+
+class StationTrack(models.Model):
+    """
+    One row per played track event for a station (the station playlist).
+
+    `played_at` records when the track was observed on air.
+    """
+    station = models.ForeignKey(Station, on_delete=models.CASCADE, related_name="playlist")
+    track = models.ForeignKey(Track, on_delete=models.CASCADE, related_name="played_on")
+    played_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-played_at"]
+        indexes = [
+            models.Index(fields=["station", "-played_at"], name="idx_station_played_at"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.station.name}: {self.track.full_name}"

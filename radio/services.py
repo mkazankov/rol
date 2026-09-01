@@ -7,7 +7,7 @@ from typing import Any
 import requests
 from django.db import transaction
 
-from .models import Station
+from .models import Station, StationTrack, Track
 
 # Prefer all.api (DNS round-robin); fall back to regional mirrors if one host fails.
 RADIO_BROWSER_SEARCH_URLS: tuple[str, ...] = (
@@ -358,3 +358,66 @@ def fetch_current_track(stream_url: str) -> str | None:
         return None
 
     return None
+
+
+def parse_track_parts(raw: str | None) -> tuple[str, str]:
+    """
+    Split a raw StreamTitle into (artist, title).
+
+    The artist is the part before the first separator (" - ", " -",
+    "- ", or en-dash "–"); anything without a separator is treated as
+    the title only.
+    """
+    if not raw:
+        return "", ""
+
+    value = raw.strip()
+    if not value:
+        return "", ""
+
+    for sep in (" - ", " – ", " -", "- ", "–", "-"):
+        if sep in value:
+            artist, title = value.split(sep, 1)
+            return artist.strip(), title.strip()
+
+    return "", value
+
+
+def _compose_full_name(artist: str, title: str) -> str:
+    """Build the composite full name used for global uniqueness."""
+    if artist:
+        return f"{artist} - {title}"
+    return title
+
+
+def record_current_track(station: Station, raw: str | None) -> Track | None:
+    """
+    Persist the currently playing track for a station.
+
+    The Track is created globally (get_or_create by full_name), so the
+    same song played on different stations resolves to one catalog row.
+    A StationTrack playlist row is inserted only when the track differs
+    from the station's most recently recorded track (consecutive repeats
+    are skipped).
+
+    Returns the Track, or None when there is nothing to record.
+    """
+    if not raw or not raw.strip():
+        return None
+
+    artist, title = parse_track_parts(raw)
+    full_name = _compose_full_name(artist, title)
+
+    track, _ = Track.objects.get_or_create(full_name=full_name, defaults={"artist": artist, "title": title})
+
+    latest = (
+        station.playlist.select_related("track")
+        .order_by("-played_at")
+        .values_list("track__full_name", flat=True)
+        .first()
+    )
+    if latest == track.full_name:
+        return track
+
+    StationTrack.objects.create(station=station, track=track)
+    return track
