@@ -319,6 +319,36 @@ def refresh_station_db(max_records: int | None = None) -> dict[str, int]:
     }
 
 
+def is_station_stream_available(stream_url: str, timeout: int = 15) -> bool:
+    """
+    Return True when the station's audio stream responds with media data.
+
+    The check performs a streaming GET and reads a small chunk from the
+    body, so an unresponsive server, a broken URL, or an empty payload is
+    treated as "not available".
+    """
+    if not stream_url:
+        return False
+
+    headers = {"User-Agent": "RadioLive/1.0"}
+    try:
+        with requests.get(
+            stream_url, headers=headers, stream=True, timeout=timeout
+        ) as response:
+            if response.status_code != 200:
+                return False
+            chunk = response.raw.read(1024)
+            if not chunk:
+                return False
+            content_type = response.headers.get("content-type", "").lower()
+            if content_type and "audio" in content_type:
+                return True
+            # Some servers omit a useful content-type but still stream audio.
+            return True
+    except (requests.RequestException, ValueError, OSError):
+        return False
+
+
 def fetch_current_track(stream_url: str) -> str | None:
     """
     Read ICY metadata from stream and return StreamTitle if present.
