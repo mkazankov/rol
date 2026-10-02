@@ -26,6 +26,14 @@ class Station(models.Model):
     def __str__(self) -> str:
         return f"{self.name} ({self.country or 'Unknown'})"
 
+    @property
+    def genre_slug(self) -> str:
+        return self.genre.lower().replace(" ", "-") if self.genre else ""
+
+    @property
+    def country_slug(self) -> str:
+        return self.country.lower().replace(" ", "-") if self.country else ""
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorite_stations")

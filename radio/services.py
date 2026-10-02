@@ -390,6 +390,55 @@ def fetch_current_track(stream_url: str) -> str | None:
     return None
 
 
+def fetch_icy_info(stream_url: str) -> tuple[str | None, str | None]:
+    """
+    Read ICY metadata from stream.
+
+    Returns (stream_title, icy_bitrate) where icy_bitrate is the
+    actual stream bitrate reported by the server (e.g. "128", "320").
+    """
+    headers = {
+        "Icy-MetaData": "1",
+        "User-Agent": "RadioLive/1.0",
+    }
+    title: str | None = None
+    bitrate: str | None = None
+
+    try:
+        with requests.get(stream_url, headers=headers, stream=True, timeout=10) as response:
+            response.raise_for_status()
+            bitrate = response.headers.get("icy-br")
+
+            metaint_raw = response.headers.get("icy-metaint")
+            if not metaint_raw:
+                return title, bitrate
+
+            metaint = int(metaint_raw)
+            if metaint <= 0:
+                return title, bitrate
+
+            stream = response.raw
+            stream.read(metaint)
+            metadata_length_byte = stream.read(1)
+            if not metadata_length_byte:
+                return title, bitrate
+
+            metadata_length = metadata_length_byte[0] * 16
+            if metadata_length <= 0:
+                return title, bitrate
+
+            metadata_bytes = stream.read(metadata_length)
+            metadata_text = metadata_bytes.decode("utf-8", errors="ignore").strip("\x00")
+            for part in metadata_text.split(";"):
+                if part.lower().startswith("streamtitle="):
+                    value = part.split("=", 1)[1].strip().strip("'")
+                    title = value or None
+    except (requests.RequestException, ValueError):
+        return title, bitrate
+
+    return title, bitrate
+
+
 def parse_track_parts(raw: str | None) -> tuple[str, str]:
     """
     Split a raw StreamTitle into (artist, title).

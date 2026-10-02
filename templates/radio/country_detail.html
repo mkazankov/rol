@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RadioLive - Listen Online</title>
+    <title>{{ country }} - RadioLive</title>
     <link rel="stylesheet" href="{% static 'radio/app.css' %}">
 </head>
 <body>
 <header class="header">
-    <h1>RadioLive</h1>
-    <p>Listen online to radio stations worldwide.</p>
+    <h1>{{ country }}</h1>
+    <p>Radio stations in this country.</p>
     <nav class="top-nav">
         <a href="{% url 'home' %}">Home</a>
         <a href="{% url 'genres' %}">Genres</a>
@@ -30,29 +30,9 @@
 </header>
 
 <main class="container">
-    {% if messages %}
-        <section class="messages">
-            {% for message in messages %}
-                <p class="message">{{ message }}</p>
-            {% endfor %}
-        </section>
-    {% endif %}
-
-    <form method="post" action="{% url 'refresh_stations' %}" class="refresh-form">
-        {% csrf_token %}
-        <button type="submit">Refresh stations DB</button>
-    </form>
+    <a href="{% url 'countries' %}" class="back-link">&larr; All countries</a>
 
     <form method="get" class="filters">
-        <input type="text" name="q" value="{{ query }}" placeholder="Search station name..." />
-        <select name="country">
-            <option value="">All countries</option>
-            {% for country_name in countries %}
-                <option value="{{ country_name }}" {% if country == country_name %}selected{% endif %}>
-                    {{ country_name }}
-                </option>
-            {% endfor %}
-        </select>
         <select name="genre">
             <option value="">All genres</option>
             {% for genre_name in genres %}
@@ -69,8 +49,8 @@
                 </option>
             {% endfor %}
         </select>
-        <button type="submit">Search</button>
-        <a href="{% url 'home' %}" class="reset">Reset</a>
+        <button type="submit">Filter</button>
+        <a href="{% url 'country_detail' country_slug %}" class="reset">Reset</a>
     </form>
 
     {% if stations %}
@@ -85,7 +65,7 @@
                         {% endif %}
                         <div>
                             <h2><a href="{% url 'station_detail' station.station_uuid %}">{{ station.name }}</a></h2>
-                            <p>{% if station.country %}<a href="{% url 'country_detail' station.country_slug %}" class="country-link">{{ station.country }}</a>{% else %}Unknown{% endif %} | {% if station.genre %}<a href="{% url 'genre_detail' station.genre_slug %}" class="genre-link">{{ station.genre }}</a>{% else %}No genre{% endif %} | {{ station.bitrate }} kbps</p>
+                            <p>{% if station.genre %}<a href="{% url 'genre_detail' station.genre_slug %}" class="genre-link">{{ station.genre }}</a>{% else %}No genre{% endif %} | {{ station.bitrate }} kbps</p>
                             <span class="quality-badge quality-{{ station.quality_level }}">{{ station.quality_label }}</span>
                         </div>
                     </div>
@@ -114,7 +94,7 @@
             {% endfor %}
         </section>
     {% else %}
-        <p class="empty">No stations found. Try a different query.</p>
+        <p class="empty">No stations found for this country.</p>
     {% endif %}
 </main>
 

@@ -23,6 +23,10 @@ async function updateCurrentTrack() {
     }
     const data = await response.json();
     nowTrack.textContent = `Track: ${data.track || "-"}`;
+    const nowBitrate = document.getElementById("now-bitrate");
+    if (nowBitrate) {
+      nowBitrate.textContent = data.bitrate ? `${data.bitrate} kbps` : "";
+    }
   } catch {
     nowTrack.textContent = "Track: -";
   }
@@ -48,6 +52,10 @@ playButtons.forEach((button) => {
     if (nowTrack) {
       nowTrack.textContent = "Track: loading...";
     }
+    const nowBitrate = document.getElementById("now-bitrate");
+    if (nowBitrate) {
+      nowBitrate.textContent = "";
+    }
     updateCurrentTrack();
     trackPollTimer = setInterval(updateCurrentTrack, 20000);
   });
@@ -57,6 +65,10 @@ player.addEventListener("error", () => {
   nowPlaying.textContent = "Stream error. Please try another station.";
   if (nowTrack) {
     nowTrack.textContent = "Track: -";
+  }
+  const nowBitrate = document.getElementById("now-bitrate");
+  if (nowBitrate) {
+    nowBitrate.textContent = "";
   }
   stopTrackPolling();
 });
