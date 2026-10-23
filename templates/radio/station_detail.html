@@ -33,7 +33,7 @@
 
     <article class="station-detail">
         <div class="station-detail-head">
-            {% if station.favicon %}
+            {% if station.favicon and station.favicon != "null" and station.favicon != "none" %}
                 <img src="{{ station.favicon }}" alt="{{ station.name }}" class="station-logo">
             {% else %}
                 <div class="station-logo fallback">FM</div>

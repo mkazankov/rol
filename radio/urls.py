@@ -18,6 +18,7 @@ from .views import (
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("signup/", SignupView.as_view(), name="signup"),
+    path("signup/", SignupView.as_view(), name="login"),
     path("favorites/", FavoritesView.as_view(), name="favorites"),
     path("favorites/download.m3u", download_favorites_m3u, name="download_favorites_m3u"),
     path("genres/", GenresView.as_view(), name="genres"),

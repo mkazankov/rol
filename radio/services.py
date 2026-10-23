@@ -138,16 +138,22 @@ def _station_uuid_from_item(item: dict[str, Any]) -> str:
 
 def _normalize_station(item: dict[str, Any]) -> dict[str, Any]:
     tags = item.get("tags", "")
+    favicon_raw = item.get("favicon") or ""
+    if favicon_raw.lower() in ("null", "none", ""):
+        favicon_raw = ""
+    homepage_raw = item.get("homepage") or ""
+    if homepage_raw.lower() in ("null", "none", ""):
+        homepage_raw = ""
     return {
         "station_uuid": _station_uuid_from_item(item),
         "name": item.get("name", "Unknown station")[:255],
         "stream_url": (item.get("url_resolved") or item.get("urlResolved") or item.get("url") or "")[:1000],
-        "homepage": (item.get("homepage") or "")[:1000],
+        "homepage": homepage_raw[:1000],
         "country": (item.get("country") or "")[:128],
         "language": (item.get("language") or "")[:128],
         "tags": tags,
         "genre": classify_genre_from_tags(tags)[:64],
-        "favicon": (item.get("favicon") or "")[:1000],
+        "favicon": favicon_raw[:1000],
         "bitrate": int(item.get("bitrate") or 0),
         "clickcount": int(item.get("clickcount") or 0),
         "is_active": True,

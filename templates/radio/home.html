@@ -78,7 +78,7 @@
             {% for station in stations %}
                 <article class="station-card {% if station.station_uuid in favorites %}favorite{% endif %}">
                     <div class="station-head">
-                        {% if station.favicon %}
+                        {% if station.favicon and station.favicon != "null" and station.favicon != "none" %}
                             <img src="{{ station.favicon }}" alt="{{ station.name }}" class="logo">
                         {% else %}
                             <div class="logo fallback">FM</div>
