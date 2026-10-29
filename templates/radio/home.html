@@ -38,11 +38,6 @@
         </section>
     {% endif %}
 
-    <form method="post" action="{% url 'refresh_stations' %}" class="refresh-form">
-        {% csrf_token %}
-        <button type="submit">Refresh stations DB</button>
-    </form>
-
     <form method="get" class="filters">
         <input type="text" name="q" value="{{ query }}" placeholder="Search station name..." />
         <select name="country">
