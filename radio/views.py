@@ -217,22 +217,39 @@ class GenresView(View):
             .annotate(count=models.Count("id"))
             .order_by("genre")
         )
-        return render(request, self.template_name, {"genres": genres})
+        unspecified_count = Station.objects.filter(is_active=True, genre="").count()
+        return render(
+            request,
+            self.template_name,
+            {"genres": genres, "unspecified_count": unspecified_count},
+        )
 
 
 class GenreDetailView(View):
     """Stations for a single genre with country and quality filters."""
     template_name = "radio/genre_detail.html"
     page_size = 80
+    unspecified_slug = "not-specified"
 
     def get(self, request: HttpRequest, genre_slug: str) -> HttpResponse:
-        genre_display = genre_slug.replace("-", " ").title()
-
-        stations_qs = Station.objects.filter(genre__iexact=genre_slug, is_active=True)
+        if genre_slug == self.unspecified_slug:
+            genre_display = "Not specified"
+            genre_qs = Station.objects.filter(genre="", is_active=True)
+        else:
+            genre_display = genre_slug.replace("-", " ").title()
+            genre_qs = Station.objects.filter(genre__iexact=genre_slug, is_active=True)
 
         country = request.GET.get("country", "").strip()
         quality = request.GET.get("quality", "").strip().lower()
 
+        countries = (
+            genre_qs.exclude(country="")
+            .values_list("country", flat=True)
+            .distinct()
+            .order_by("country")
+        )
+
+        stations_qs = genre_qs
         if country:
             stations_qs = stations_qs.filter(country__iexact=country)
         if quality == "low":
@@ -251,14 +268,6 @@ class GenreDetailView(View):
             station.quality_label = _quality_label(lvl)
 
         favorites = _favorite_ids_for_request(request)
-
-        countries = (
-            Station.objects.filter(genre__iexact=genre_slug, is_active=True)
-            .exclude(country="")
-            .values_list("country", flat=True)
-            .distinct()
-            .order_by("country")
-        )
 
         return render(
             request,

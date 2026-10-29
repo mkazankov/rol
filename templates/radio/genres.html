@@ -30,7 +30,7 @@
 </header>
 
 <main class="container">
-    {% if genres %}
+    {% if genres or unspecified_count %}
         <section class="genre-list">
             {% for g in genres %}
                 <a href="{% url 'genre_detail' g.genre %}" class="genre-card">
@@ -38,6 +38,12 @@
                     <span class="genre-count">{{ g.count }} station{{ g.count|pluralize }}</span>
                 </a>
             {% endfor %}
+            {% if unspecified_count %}
+                <a href="{% url 'genre_detail' 'not-specified' %}" class="genre-card">
+                    <span class="genre-name">Not specified</span>
+                    <span class="genre-count">{{ unspecified_count }} station{{ unspecified_count|pluralize }}</span>
+                </a>
+            {% endif %}
         </section>
     {% else %}
         <p class="empty">No genres found. Refresh the station database first.</p>
